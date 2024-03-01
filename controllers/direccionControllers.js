@@ -1,12 +1,36 @@
 // Archivo: controllers/direccionController.js
 
 import Direccion from '../models/direccion.js';
+import User from '../models/user.js'; // Importa el modelo de usuario
 
-// Función para crear una nueva dirección
 export const createAddress = async (req, res) => {
-  const { title, description, address, department, city, latitude, longitude } = req.body;
-  const newAddress = new Direccion({ title, description, address, department, city, latitude, longitude });
+  const { title, description, address, department, city, latitude, longitude, bedrooms, bathrooms, price } = req.body;
+  
   try {
+    // Buscar el usuario por su nombre de usuario
+    const user = await User.findOne({ username: req.user.username });
+
+    // Verificar si se encontró el usuario
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    // Crear la dirección con el ID del usuario como createdBy
+    const newAddress = new Direccion({
+      title,
+      description,
+      address,
+      department,
+      city,
+      latitude,
+      longitude,
+      bedrooms,
+      bathrooms,
+      price,
+      createdBy: user.username
+    });
+console.log("title:", title, "description:", description, "address:", address, "department:", department, "city:", city, "latitude:", latitude, "longitude:", longitude, "usuario creacion:", user.username);
+    // Guardar la dirección en la base de datos
     const addressSave = await newAddress.save();
     res.status(201).json(addressSave);
   } catch (error) {
@@ -16,7 +40,6 @@ export const createAddress = async (req, res) => {
 
 // Función para obtener todas las direcciones
 export const getAllAddresses = async (req, res) => {
-  console.log('hola mundo de kathe')
   try {
     const direcciones = await Direccion.find();
     res.json(direcciones);
@@ -26,19 +49,20 @@ export const getAllAddresses = async (req, res) => {
 };
 
 // Función para obtener direcciones filtradas por título, departamento o ciudad
+//TODO: Revisar
 export const search = async (req, res) => {
   const { title, department, city } = req.query;
   const query = {};
 
-  // Construir el objeto de consulta en base a los parámetros proporcionados
+ 
   if (title) {
-    query.title = { $regex: title, $options: 'i' }; // Realizar búsqueda por título (ignorando mayúsculas y minúsculas)
+    query.title = { $regex: title, $options: 'i' };
   }
   if (department) {
-    query.department = department; // Realizar búsqueda por departamento
+    query.department = department;
   }
   if (city) {
-    query.city = city; // Realizar búsqueda por ciudad
+    query.city = city;
   }
 
   try {
@@ -49,60 +73,50 @@ export const search = async (req, res) => {
   }
 };
 
-// Función para actualizar una dirección por su ID
+// Controlador para actualizar una dirección
 export const updateAddress = async (req, res) => {
-  if (req.body.title != null) {
-    res.direccion.title = req.body.title;
-  }
-  if (req.body.description != null) {
-    res.direccion.description = req.body.description;
-  }
-  if(req.body.address != null) {
-    res.direccion.address = req.body.address;
-  }
-  if(req.body.department != null) {
-    res.direccion.department = req.body.department;
-  }
-  if(req.body.city != null) {
-    res.direccion.city = req.body.city;
-  }
-  if(req.body.latitude != null) {
-    res.direccion.latitude = req.body.latitude;
-  }
-  if(req.body.longitude != null) {
-    res.direccion.longitude = req.body.longitude;
-  }
+  Object.keys(req.body).forEach(key => {
+      res.direccion[key] = req.body[key];
+  });
+  // Buscar el usuario por su nombre de usuario
+    const user = await User.findOne({ username: req.user.username });
 
+    // Verificar si se encontró el usuario
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+  res.direccion.updatedBy = req.user.username;
+  console.log("usuario actualizo:", req.user.username, "updatedBy:", res.direccion.updatedBy);
   try {
-    const direccionActualizada = await res.direccion.save();
-    res.json(direccionActualizada);
+      const updatedDireccion = await res.direccion.save();
+      res.json(updatedDireccion);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+      res.status(400).json({ message: error.message });
   }
 };
 
-// Función para eliminar una dirección por su ID
+// Controlador para eliminar una dirección
 export const deleteAddress = async (req, res) => {
+const id = req.params.id
+console.log("id:", id);
   try {
-    await res.direccion.remove();
-    res.json({ message: 'Dirección eliminada' });
+      await Direccion.deleteOne({_id : id});
+      res.json({ message: 'Dirección eliminada correctamente' });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+      res.status(500).json({ message: error.message });
   }
 };
-
 // Middleware para obtener una dirección por su ID
 export const addressById = async (req, res, next) => {
-  let direccion;
   try {
-    direccion = await Direccion.findById(req.params.id);
-    if (direccion == null) {
-      return res.status(404).json({ message: 'No se puede encontrar la dirección' });
-    }
+      const direccion = await Direccion.findById(req.params.id);
+      if (!direccion) {
+          return res.status(404).json({ message: 'No se puede encontrar la dirección' });
+      }
+      res.direccion = direccion;
+      next();
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+      return res.status(500).json({ message: error.message });
   }
-
-  res.direccion = direccion;
-  next();
 };
+
