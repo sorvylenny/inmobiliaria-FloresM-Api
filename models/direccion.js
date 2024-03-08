@@ -14,6 +14,7 @@ const addressSchema = new mongoose.Schema({
   updatedBy: { type: mongoose.Schema.Types.Mixed, required: false },
   bedrooms: { type: Number, required: true },
   bathrooms: { type: Number, required: true },
+  closet: { type: Number, required: true },
   price: { type: Number, required: true },
 });
 

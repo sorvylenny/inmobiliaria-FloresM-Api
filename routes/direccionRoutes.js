@@ -6,11 +6,13 @@ import { authenticateUser, authorize } from '../middleware/authMiddleware.js'; /
 // Rutas accesibles para todos
 router.get('/getAll', getAllAddresses);
 router.get('/search', search);
+router.get('/seemore/:id', addressById);
+
 
 router.use(authenticateUser);
 
 router.post('/create', authorize,createAddress);
-router.put('/update/:id', authorize, addressById, updateAddress);
+router.put('/update/:id', authorize, updateAddress);
 router.delete('/delete/:id', authorize, deleteAddress);
 
 

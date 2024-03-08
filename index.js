@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
 import direccionRoutes from './routes/direccionRoutes.js';
 import authRoutes from './routes/authRoutes.js';
+import cors from 'cors';
 
 const app = express();
 dotenv.config();
@@ -11,6 +12,13 @@ const mongoString= process.env.mongoDB;
 const mongoDbUrl = "mongodb+srv://"+mongoString;
 /* mongoose.set("strictQuery", false);
 mongoose.set(mongoDbUrl,{ssl: true}); */
+
+app.use(cors({
+  origin: 'http://localhost:4200',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true // Si necesitas enviar cookies o autenticación
+}));
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
