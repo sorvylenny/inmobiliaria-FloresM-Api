@@ -9,7 +9,7 @@ const addressSchema = new mongoose.Schema({
   latitude: { type: Number, required: true },
   longitude: { type: Number, required: true },
   createdAt: { type: Date, default: Date.now },
-  createdBy: { type: mongoose.Schema.Types.Mixed, required: false },
+  createdBy: { type: mongoose.Schema.Types.Mixed, required: true },
   updatedAt: { type: Date, default: Date.now },
   updatedBy: { type: mongoose.Schema.Types.Mixed, required: false },
   bedrooms: { type: Number, required: true },
