@@ -8,20 +8,26 @@ export const register = async (req, res) => {
 
   try {
     // Verificar si el usuario ya existe
-    const existingUser = await User.findOne({ username });
+    const existingUser = await User.findOne({ username: { $regex : new RegExp("^" + username + "$", "i") } });
     if (existingUser) {
       return res.status(400).json({ message: 'El usuario ya existe' });
     }
 
     // Crear un nuevo usuario
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ username, fullname, password: hashedPassword, roles, isActive: true });
+    const newUser = new User({ username: username.toLowerCase(), fullname: fullname.toUpperCase(),password: hashedPassword, roles, isActive: true });
     await newUser.save();
-
+    const clean_response = {
+      _id: newUser._id,
+      username: newUser.username,
+      fullname: newUser.fullname,
+      roles: newUser.roles,
+      isActive: newUser.isActive
+          }
     // Generar el token JWT
     const token = jwt.sign({ userId: newUser._id, role: newUser.role }, 'secretKey', { expiresIn: '1h' });
 
-    res.status(201).json({ message: 'Usuario creado exitosamente', user: newUser, token });
+    res.status(201).json({ message: 'Usuario creado exitosamente', user: clean_response, token });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -29,9 +35,10 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   const { username, password } = req.body;
   console.log('username:', username, 'password:', password);
+  
   try {
       // Verificar si el usuario existe
-      const user = await User.findOne({ username: { $regex : new RegExp(username, "i") } });
+      const user = await User.findOne({ username: { $regex : new RegExp("^" + username + "$", "i") } });
       if (!user) {
           return res.status(401).json({ message: 'El nombre de usuario o la contraseña son incorrectos' });
       }
@@ -61,7 +68,15 @@ export const login = async (req, res) => {
 export const getAllUsers = async (req, res) => {
   try {
     const users = await User.find();
-    res.status(200).json(users);
+  const clean_response = users.map(users => {
+    return {
+    _id: users._id,
+    username: users.username,
+    fullname: users.fullname,
+    roles: users.roles,
+    isActive: users.isActive
+  }});
+    res.status(200).json(clean_response);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -81,16 +96,19 @@ export const updateUser = async (req, res) => {
     // Actualizar los campos del usuario
     if (username) user.username = username;
     if (fullname) user.fullname = fullname;
-    if (password) {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      user.password = hashedPassword;
-    }
+    if (password) user.password = password;
     if (roles) user.roles = roles;
     if (isActive) user.isActive = isActive;
 
     await user.save();
-
-    res.status(200).json({ message: 'Usuario actualizado correctamente', user });
+    const  clean_response={
+      _id: user._id,
+      username: user.username,
+      fullname: user.fullname,
+      roles: user.roles,
+      isActive: user.isActive
+    }
+    res.status(200).json({ message: 'Usuario actualizado correctamente', user: clean_response });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
