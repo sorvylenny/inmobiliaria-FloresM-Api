@@ -24,8 +24,9 @@ const authenticateUser = (req, res, next) => {
 };
 
 const authorize = (req, res, next) => {
+    console.log('req', req)
     // Verificar si req.user está definido y si tiene la propiedad roles
-    if (!req.user || !req.user.roles) {
+    if (!req.user || !req.user.roles || !req.user.isActive == "false") {
         return res.status(403).json({ message: 'Acceso no autorizado' });
     }
 

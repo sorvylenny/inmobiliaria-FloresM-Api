@@ -1,10 +1,41 @@
 // Archivo: controllers/direccionController.js
 
 import Direccion from '../models/direccion.js';
+import  OwnerDetails from '../models/owner.js';
 import User from '../models/user.js';
 
+
+export const saveOwnerDetails = async (req, res) => {
+  const { ownerName, ownerPhoneNumber, ownerAddress } = req.body; // Extrae los datos del propietario del cuerpo de la solicitud
+
+  try {
+    const newOwner = new OwnerDetails({
+      name: ownerName,
+      phoneNumber: ownerPhoneNumber,
+      address: ownerAddress
+    });
+
+    // Guardar el propietario en la base de datos y devolver el resultado
+    const savedOwner = await newOwner.save();
+    res.status(201).json(savedOwner); // Devuelve el propietario guardado como respuesta
+  } catch (error) {
+    res.status(500).json({ message: 'Error al guardar los detalles del propietario: ' + error.message });
+  }
+};
+export const getAllOwners = async (req, res) => {
+  try {
+    // Realiza la consulta a la base de datos para obtener todos los propietarios
+    const owners = await OwnerDetails.find();
+
+    // Devuelve la lista de propietarios como respuesta
+    res.status(200).json(owners);
+  } catch (error) {
+    // Maneja los errores
+    res.status(500).json({ message: 'Error al obtener los propietarios: ' + error.message });
+  }
+};
 export const createAddress = async (req, res) => {
-  const { title, description, address, department, city, latitude, longitude, bedrooms, bathrooms,closet, price } = req.body;
+  const {  ownerId, numberRef,title, description, address, department, city, latitude, longitude, bedrooms, bathrooms,closet, price } = req.body;
   
   try {
     // Buscar el usuario por su nombre de usuario
@@ -17,6 +48,7 @@ export const createAddress = async (req, res) => {
 
     // Crear la dirección con el ID del usuario como createdBy
     const newAddress = new Direccion({
+      numberRef,
       title,
       description,
       address,
@@ -28,6 +60,7 @@ export const createAddress = async (req, res) => {
       bathrooms,
       closet,
       price,
+      ownerId: ownerId,
       createdBy: user.username
     });
 console.log("title:", title, "description:", description, "address:", address, "department:", department, "city:", city, "latitude:", latitude, "longitude:", longitude, "usuario creacion:", user.username);
@@ -103,6 +136,8 @@ export const updateAddress = async (req, res) => {
 
     // Actualiza el campo 'updatedBy' con el nombre de usuario del usuario actual
     direccion.updatedBy = req.user.username;
+
+    direccion.updatedAt = new Date();
 
     // Guarda la dirección actualizada en la base de datos
     const updatedDireccion = await direccion.save();

@@ -4,21 +4,19 @@ import User from '../models/user.js';
 import dotenv from 'dotenv';
 dotenv.config();
 export const register = async (req, res) => {
-  const { username, fullname, password, roles } = req.body;
+  const { username, fullname, document, email, phoneNumber, password, roles } = req.body;
 
   try {
-    // Verificar si el usuario ya existe
+    
     const existingUser = await User.findOne({ username });
     if (existingUser) {
       return res.status(400).json({ message: 'El usuario ya existe' });
     }
 
-    // Crear un nuevo usuario
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ username, fullname, password: hashedPassword, roles, isActive: true });
+    const newUser = new User({ username, fullname, document, email, phoneNumber, password: hashedPassword, roles, isActive: true });
     await newUser.save();
-
-    // Generar el token JWT
+    
     const token = jwt.sign({ userId: newUser._id, role: newUser.role }, 'secretKey', { expiresIn: '1h' });
 
     res.status(201).json({ message: 'Usuario creado exitosamente', user: newUser, token });
@@ -61,16 +59,28 @@ export const login = async (req, res) => {
 export const getAllUsers = async (req, res) => {
   try {
     const users = await User.find();
-    res.status(200).json(users);
+    const cleanUsers = users.map(user => ({
+      _id: user._id,
+      username: user.username,
+      fullname: user.fullname,
+      document: user.document,
+      email: user.email,
+      phoneNumber: user.phoneNumber,
+      roles: user.roles,
+      isActive: user.isActive
+    }));
+    res.status(200).json(cleanUsers);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
+
 export const updateUser = async (req, res) => {
   const { id } = req.params;
-  const { username, fullname, password, roles, isActive } = req.body;
+  const { username, fullname, document, email, phoneNumber, roles, isActive } = req.body;
 
+  console.log('body:',req)
   try {
     // Verificar si el usuario existe
     const user = await User.findById({_id : id});
@@ -81,17 +91,29 @@ export const updateUser = async (req, res) => {
     // Actualizar los campos del usuario
     if (username) user.username = username;
     if (fullname) user.fullname = fullname;
-    if (password) {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      user.password = hashedPassword;
-    }
+    if (document) user.document = document;
+    if (email) user.email = email;
+    if (phoneNumber) user.phoneNumber = phoneNumber;
     if (roles) user.roles = roles;
-    if (isActive) user.isActive = isActive;
-
+    if (isActive !== undefined) {user.isActive = isActive;}
+    console.log(user)
     await user.save();
 
     res.status(200).json({ message: 'Usuario actualizado correctamente', user });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+export const userById = async(req, res)=>{
+  const { id } = req.params;
+  try{
+    const user = await User.findById({_id:id});
+    if(!user){
+      return res.status(404).json({message:'No se encontro el usuario'});
+    }
+    res.json(user);
+  } catch(error){
+    return res.status(500).json({message: error.message});
   }
 };
