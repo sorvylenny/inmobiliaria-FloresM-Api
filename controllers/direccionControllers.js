@@ -1,5 +1,3 @@
-// Archivo: controllers/direccionController.js
-
 import Direccion from '../models/direccion.js';
 import  OwnerDetails from '../models/owner.js';
 import User from '../models/user.js';
@@ -34,6 +32,17 @@ export const getAllOwners = async (req, res) => {
     res.status(500).json({ message: 'Error al obtener los propietarios: ' + error.message });
   }
 };
+const generarNumeroRef = (department) => {
+
+  const threeLette = department.slice(0, 3).toUpperCase();
+
+  const numbeRandom = Math.floor(Math.random() * 900) + 100;
+
+  const numeroRef = threeLette + numbeRandom;
+
+  return numeroRef;
+};
+
 export const createAddress = async (req, res) => {
   const {  ownerId, numberRef,title, description, address, department, city, latitude, longitude, bedrooms, bathrooms,closet, price } = req.body;
   
@@ -46,9 +55,11 @@ export const createAddress = async (req, res) => {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
 
+    const numeroRef = numberRef || generarNumeroRef(department);
+
     // Crear la dirección con el ID del usuario como createdBy
     const newAddress = new Direccion({
-      numberRef,
+      numberRef: numeroRef,
       title,
       description,
       address,

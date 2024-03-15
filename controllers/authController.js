@@ -17,7 +17,7 @@ export const register = async (req, res) => {
     const newUser = new User({ username, fullname, document, email, phoneNumber, password: hashedPassword, roles, isActive: true });
     await newUser.save();
     
-    const token = jwt.sign({ userId: newUser._id, role: newUser.role }, 'secretKey', { expiresIn: '1h' });
+    const token = jwt.sign({ userId: newUser._id, role: newUser.role }, 'secretKey', { /* expiresIn: '1h' */ });
 
     res.status(201).json({ message: 'Usuario creado exitosamente', user: newUser, token });
   } catch (error) {
@@ -80,7 +80,6 @@ export const updateUser = async (req, res) => {
   const { id } = req.params;
   const { username, fullname, document, email, phoneNumber, roles, isActive } = req.body;
 
-  console.log('body:',req)
   try {
     // Verificar si el usuario existe
     const user = await User.findById({_id : id});
