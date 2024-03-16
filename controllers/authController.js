@@ -43,7 +43,8 @@ export const login = async (req, res) => {
       const singedUser = {
           id: user._id,
           username: user.username,
-          roles: user.roles
+          roles: user.roles,
+          isActive: user.isActive
       };
 
       // Generar token de autenticación

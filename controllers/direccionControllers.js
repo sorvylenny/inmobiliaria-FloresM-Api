@@ -4,18 +4,18 @@ import User from '../models/user.js';
 
 
 export const saveOwnerDetails = async (req, res) => {
-  const { ownerName, ownerPhoneNumber, ownerAddress } = req.body; // Extrae los datos del propietario del cuerpo de la solicitud
+  const { name,phoneNumber, address } = req.body; // Extrae los datos del propietario del cuerpo de la solicitud
+console.log(req.body)
 
   try {
-    const newOwner = new OwnerDetails({
-      name: ownerName,
-      phoneNumber: ownerPhoneNumber,
-      address: ownerAddress
+    const newOwner = await OwnerDetails.create({
+      name: name,
+      phoneNumber: phoneNumber,
+      address: address
     });
-
     // Guardar el propietario en la base de datos y devolver el resultado
-    const savedOwner = await newOwner.save();
-    res.status(201).json(savedOwner); // Devuelve el propietario guardado como respuesta
+    
+    res.status(201).json(newOwner); // Devuelve el propietario guardado como respuesta
   } catch (error) {
     res.status(500).json({ message: 'Error al guardar los detalles del propietario: ' + error.message });
   }
@@ -33,18 +33,20 @@ export const getAllOwners = async (req, res) => {
   }
 };
 const generarNumeroRef = (department) => {
-
-  const threeLette = department.slice(0, 3).toUpperCase();
-
+  const depName = department.name;
+  console.log('depName', depName);
+  const threeLetters = depName.slice(0, 3).toUpperCase();
+  console.log('nombre solamente', threeLetters);
+  
   const numbeRandom = Math.floor(Math.random() * 900) + 100;
 
-  const numeroRef = threeLette + numbeRandom;
-
+  const numeroRef = threeLetters + numbeRandom;
+  console.log('numero de ref', numeroRef);
   return numeroRef;
 };
-
 export const createAddress = async (req, res) => {
-  const {  ownerId, numberRef,title, description, address, department, city, latitude, longitude, bedrooms, bathrooms,closet, price } = req.body;
+  const {  ownerId, title, description, address, department, city, latitude, longitude, bedrooms, bathrooms,closet, price } = req.body;
+  console.log(req)
   
   try {
     // Buscar el usuario por su nombre de usuario
@@ -55,16 +57,16 @@ export const createAddress = async (req, res) => {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
 
-    const numeroRef = numberRef || generarNumeroRef(department);
-
+    const numeroRef = generarNumeroRef(department);
+    console.log('numero de ref', numeroRef);
     // Crear la dirección con el ID del usuario como createdBy
     const newAddress = new Direccion({
       numberRef: numeroRef,
       title,
       description,
       address,
-      department,
-      city,
+      department:department.name,
+      city: city.name,
       latitude,
       longitude,
       bedrooms,
@@ -79,7 +81,7 @@ console.log("title:", title, "description:", description, "address:", address, "
     const addressSave = await newAddress.save();
     res.status(201).json(addressSave);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(500).json('mensaje del servidor' + error.message);
   }
 };
 
@@ -136,7 +138,6 @@ export const updateAddress = async (req, res) => {
     Object.keys(req.body).forEach(key => {
       direccion[key] = req.body[key];
     });
-
     // Busca el usuario por su nombre de usuario
     const user = await User.findOne({ username: req.user.username });
 
@@ -154,7 +155,7 @@ export const updateAddress = async (req, res) => {
     const updatedDireccion = await direccion.save();
     res.json(updatedDireccion);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 

@@ -25,7 +25,7 @@ const authenticateUser = (req, res, next) => {
 
 const authorize = (req, res, next) => {
     // Verificar si req.user está definido y si tiene la propiedad roles
-    if (!req.user || !req.user.roles /* || req.user.isActive == "false" */) {
+    if (!req.user || !req.user.roles ) {
         return res.status(403).json({ message: 'Acceso no autorizado' });
     }
 
@@ -42,6 +42,9 @@ const authorize = (req, res, next) => {
 
         // Verificar si la ruta es de creación, actualización o eliminación de inmuebles
         if (req.method === 'POST' && req.originalUrl === '/inmuebles/create') {
+            console.log("Acceso permitido para crear");
+            return next();
+        }if (req.method === 'GET' && req.originalUrl === '/inmuebles/allOwner') {
             console.log("Acceso permitido para crear");
             return next();
         }if (req.method === 'POST' && req.originalUrl === '/users/login') {
