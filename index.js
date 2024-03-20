@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
 import direccionRoutes from './routes/direccionRoutes.js';
 import authRoutes from './routes/authRoutes.js';
+
 import cors from 'cors';
 
 const app = express();

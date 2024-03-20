@@ -34,9 +34,7 @@ export const getAllOwners = async (req, res) => {
 };
 const generarNumeroRef = (department) => {
   const depName = department.name;
-  console.log('depName', depName);
   const threeLetters = depName.slice(0, 3).toUpperCase();
-  console.log('nombre solamente', threeLetters);
   
   const numbeRandom = Math.floor(Math.random() * 900) + 100;
 
@@ -46,7 +44,6 @@ const generarNumeroRef = (department) => {
 };
 export const createAddress = async (req, res) => {
   const {  ownerId, title, description, address, department, city, latitude, longitude, bedrooms, bathrooms,closet, price } = req.body;
-  console.log(req)
   
   try {
     // Buscar el usuario por su nombre de usuario
@@ -105,9 +102,11 @@ export const search = async (req, res) => {
     query.title = { $regex: title, $options: 'i' };
   }
   if (department) {
+    console.log('department:', department);
     query.department = department;
   }
   if (city) {
+    console.log('city:', city);
     query.city = city;
   }
   if (price) {
@@ -138,6 +137,14 @@ export const updateAddress = async (req, res) => {
     Object.keys(req.body).forEach(key => {
       direccion[key] = req.body[key];
     });
+    if (req.body.department) {
+      direccion.department = req.body.department.name; // Asume que el nombre es la propiedad que quieres almacenar
+    }
+
+    // Si se envía 'city', actualiza únicamente con el nombre de la ciudad
+    if (req.body.city) {
+      direccion.city = req.body.city.name; // Asume que el nombre es la propiedad que quieres almacenar
+    }
     // Busca el usuario por su nombre de usuario
     const user = await User.findOne({ username: req.user.username });
 
@@ -184,4 +191,33 @@ export const addressById = async (req, res) => {
       return res.status(500).json({ message: error.message });
   }
 };
+/* Dashboard */
 
+export const getDepartmentsMoreRegistered = async (req, res) => {
+  try {
+    const departamentos = await Direccion.aggregate([
+      { $match: { isActive: true } },
+      { $group: { _id: "$department", total: { $sum: 1 } } },
+      { $sort: { total: -1 } },
+      { $limit: 5 }
+    ]);
+
+    res.json({ getDepartmentsMoreRegistered: departamentos });
+  } catch (error) {
+    res.status(500).send(error);
+  }
+};
+export const getCitiesMoreRegistered = async (req, res) => {
+  try {
+    const ciudades = await Direccion.aggregate([
+      { $match: { isActive: true } },
+      { $group: { _id: "$city", total: { $sum: 1 } } },
+      { $sort: { total: -1 } },
+      { $limit: 5 }
+    ]);
+
+    res.json({ getCitiesMoreRegistered: ciudades });
+  } catch (error) {
+    res.status(500).send(error);
+  }
+};

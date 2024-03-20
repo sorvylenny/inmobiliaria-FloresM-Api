@@ -33,7 +33,9 @@ export const login = async (req, res) => {
       if (!user) {
           return res.status(401).json({ message: 'El nombre de usuario o la contraseña son incorrectos' });
       }
-
+      if(user.isActive === false){
+        return res.status(403).json({ message: 'El usuario no se encuentra activo' });
+      }
       // Verificar la contraseña
       const isPasswordValid = await bcrypt.compare(password, user.password);
       if (!isPasswordValid) {
@@ -91,11 +93,11 @@ export const updateUser = async (req, res) => {
     // Actualizar los campos del usuario
     if (username) user.username = username;
     if (fullname) user.fullname = fullname;
-    if (document) user.document = document;
+    if (document !== undefined) user.document = document;
     if (email) user.email = email;
     if (phoneNumber) user.phoneNumber = phoneNumber;
-    if (roles) user.roles = roles;
-    if (isActive !== undefined) {user.isActive = isActive;}
+    if (roles !== undefined) user.roles = roles;
+    if (isActive !== undefined) user.isActive = isActive;
     console.log(user)
     await user.save();
 
