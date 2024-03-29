@@ -102,13 +102,12 @@ export const search = async (req, res) => {
     query.title = { $regex: title, $options: 'i' };
   }
   if (department) {
-    console.log('department:', department);
-    query.department = department;
+    query.department = { $regex: department, $options: 'i' };
   }
   if (city) {
-    console.log('city:', city);
-    query.city = city;
+    query.city = { $regex: city, $options: 'i' };
   }
+
   if (price) {
     query.price = price;
   }
