@@ -5,7 +5,6 @@ import User from '../models/user.js';
 
 export const saveOwnerDetails = async (req, res) => {
   const { name,phoneNumber, address } = req.body; // Extrae los datos del propietario del cuerpo de la solicitud
-console.log(req.body)
 
   try {
     const newOwner = await OwnerDetails.create({
@@ -39,7 +38,6 @@ const generarNumeroRef = (department) => {
   const numbeRandom = Math.floor(Math.random() * 900) + 100;
 
   const numeroRef = threeLetters + numbeRandom;
-  console.log('numero de ref', numeroRef);
   return numeroRef;
 };
 export const createAddress = async (req, res) => {
@@ -55,7 +53,6 @@ export const createAddress = async (req, res) => {
     }
 
     const numeroRef = generarNumeroRef(department);
-    console.log('numero de ref', numeroRef);
     // Crear la dirección con el ID del usuario como createdBy
     const newAddress = new Direccion({
       numberRef: numeroRef,
@@ -73,7 +70,6 @@ export const createAddress = async (req, res) => {
       ownerId: ownerId,
       createdBy: user.username
     });
-console.log("title:", title, "description:", description, "address:", address, "department:", department, "city:", city, "latitude:", latitude, "longitude:", longitude, "usuario creacion:", user.username);
     // Guardar la dirección en la base de datos
     const addressSave = await newAddress.save();
     res.status(201).json(addressSave);
@@ -93,7 +89,7 @@ export const getAllAddresses = async (req, res) => {
 };
 
 // Función para obtener direcciones filtradas por título, departamento o ciudad
-//TODO: Revisar
+
 export const search = async (req, res) => {
   const { title, department, city, price } = req.query;
   const query = {};
@@ -168,7 +164,6 @@ export const updateAddress = async (req, res) => {
 // Controlador para eliminar una dirección
 export const deleteAddress = async (req, res) => {
 const id = req.params.id
-console.log("id:", id);
   try {
       await Direccion.deleteOne({_id : id});
       res.json({ message: 'Dirección eliminada correctamente' });

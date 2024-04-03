@@ -26,7 +26,6 @@ export const register = async (req, res) => {
 };
 export const login = async (req, res) => {
   const { username, password } = req.body;
-  console.log('username:', username, 'password:', password);
   try {
       // Verificar si el usuario existe
       const user = await User.findOne({ username: { $regex : new RegExp(username, "i") } });
@@ -51,7 +50,7 @@ export const login = async (req, res) => {
 
       // Generar token de autenticación
       const token = jwt.sign({ userId: user._id, username: user.username, roles: user.roles }, process.env.JWT_SECRET, { expiresIn: '1h' });
-      console.log(token)
+      
       res.status(200).json({ user: singedUser, token: token });
   } catch (error) {
       console.error("Error en el inicio de sesión:", error.message);
@@ -98,7 +97,6 @@ export const updateUser = async (req, res) => {
     if (phoneNumber) user.phoneNumber = phoneNumber;
     if (roles !== undefined) user.roles = roles;
     if (isActive !== undefined) user.isActive = isActive;
-    console.log(user)
     await user.save();
 
     res.status(200).json({ message: 'Usuario actualizado correctamente', user });

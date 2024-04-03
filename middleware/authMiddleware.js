@@ -6,7 +6,7 @@ const authenticateUser = (req, res, next) => {
     try {
         const token = req.headers.authorization;
 
-        if (!token || !token.startsWith('Bearer ')) {
+        if (!token || !token.startsWith('Bearer')) {
             throw new Error('Token de autenticación no proporcionado o en formato incorrecto');
         }
 
@@ -36,9 +36,6 @@ const authorize = (req, res, next) => {
 
     // Para los empleados, permitir acceso solo a rutas específicas de crear y editar
     if (req.user.roles.includes('empleado')) {
-        console.log("Roles del empleado:", req.user.roles);
-        console.log("Método de solicitud:", req.method);
-        console.log("URL original:", req.originalUrl);
 
         // Verificar si la ruta es de creación, actualización o eliminación de inmuebles
         if (req.method === 'POST' && req.originalUrl === '/inmuebles/create') {
